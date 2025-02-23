@@ -1,6 +1,7 @@
 package cn.ultramangaia.burp.impl;
 
 import burp.api.montoya.ai.chat.*;
+import cn.ultramangaia.burp.gui.MainForm;
 import io.github.ollama4j.exceptions.RoleNotFoundException;
 import io.github.ollama4j.models.chat.OllamaChatMessage;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
@@ -34,47 +35,25 @@ public class PromptImpl implements Prompt {
 
     @Override
     public PromptResponse execute(PromptOptions options, Message... messages) throws PromptException {
-        OllamaResult ollamaResult;
         OptionsBuilder builder = new OptionsBuilder();
         if(options instanceof PromptOptionsImpl){
             builder.setTemperature((float)((PromptOptionsImpl) options).getTemperature());
         }
+        String requestStr = convertMessagesToString(messages).trim();
         api.logging().logToOutput("Request: ------");
-        api.logging().logToOutput(convertMessagesToString(messages));
+        api.logging().logToOutput(requestStr);
         api.logging().logToOutput("------");
-        List<OllamaChatMessage> chatMessages = convertMessages(messages);
-        try {
-            ollamaResult = AISpyImpl.ollamaAPI.chat(AISpyImpl.modelName, chatMessages);
-        } catch (Throwable throwable) {
-            return new PromptResponseImpl(throwable.toString());
-        }
-        String content = ollamaResult.getResponse();
-        api.logging().logToOutput("Response: ------");
-        api.logging().logToOutput(content);
-        api.logging().logToOutput("------");
-        int thinkEnd = content.indexOf("</think>");
-        if(thinkEnd != -1){
-            content = content.substring(thinkEnd+"</think>".length());
-        }
-        return new PromptResponseImpl(content.trim());
-    }
 
-    private List<OllamaChatMessage> convertMessages(Message... messages) {
-        List<OllamaChatMessage> chatMessages = new ArrayList<>();
-        for (Message message : messages) {
-            if(message instanceof MessageImpl){
-                MessageImpl messageImpl = (MessageImpl) message;
-                OllamaChatMessageRole role;
-                try {
-                    role = OllamaChatMessageRole.getRole(messageImpl.getRole());
-                }catch(RoleNotFoundException roleNotFoundException){
-                    role = OllamaChatMessageRole.USER;
-                }
-                String content = messageImpl.getContent();
-                chatMessages.add(new OllamaChatMessage(role, content));
-            }
+        String responseStr = AISpyImpl.getInstance().chat(messages);
+        api.logging().logToOutput("Response: ------");
+        api.logging().logToOutput(responseStr);
+        api.logging().logToOutput("------");
+        MainForm.getInstance().addAiLog(requestStr,responseStr);
+        int thinkEnd = responseStr.indexOf("</think>");
+        if(thinkEnd != -1){
+            responseStr = responseStr.substring(thinkEnd+"</think>".length());
         }
-        return chatMessages;
+        return new PromptResponseImpl(responseStr.trim());
     }
 
     private String convertMessagesToString(Message... messages) {

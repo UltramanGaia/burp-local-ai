@@ -13,6 +13,7 @@ dependencies {
     compileOnly("net.portswigger.burp.extensions:montoya-api:2025.2")
     implementation("org.javassist:javassist:3.29.2-GA")
     implementation("cn.ultramangaia:gaiasec-java-jvmhelper:1.1.0")
+    implementation("org.swinglabs:swingx:1.6.1")
     implementation("io.github.ollama4j:ollama4j:1.0.89")
 }
 
