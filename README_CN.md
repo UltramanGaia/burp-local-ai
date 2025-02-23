@@ -1,0 +1,4 @@
+# BurpLocalAIExtension
+
+BurpSuite的AI拓展能力很强，但是不提供配置对接本地LLM的能力。
+部分使用场景下不能连接PortSwigger的接口，故构建当前拓展用于提供统一接管并对接到本地LLM API接口的能力。
