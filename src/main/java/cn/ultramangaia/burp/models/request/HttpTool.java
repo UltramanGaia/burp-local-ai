@@ -36,7 +36,6 @@ public class HttpTool {
             if(statusCode == 200){
                 InputStream responseBodyStream = response.body();
                 responseBodyJson = JSON.parseObject(responseBodyStream);
-                System.out.println(responseBodyJson);
             }
         }catch(Exception e){
             e.printStackTrace();
