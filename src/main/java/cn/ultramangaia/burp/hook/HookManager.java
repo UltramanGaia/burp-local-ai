@@ -2,7 +2,7 @@ package cn.ultramangaia.burp.hook;
 
 import burp.api.montoya.ai.Ai;
 import burp.api.montoya.ai.chat.Prompt;
-import cn.ultramangaia.burp.BurpLocalAIExtension;
+import burp.BurpLocalAIExtension;
 import cn.ultramangaia.burp.impl.AISpyImpl;
 import cn.ultramangaia.java.jvmhelper.VmTool;
 import javassist.ClassPool;
@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.jar.JarFile;
 
 import static burp.api.montoya.internal.ObjectFactoryLocator.FACTORY;
-import static cn.ultramangaia.burp.BurpLocalAIExtension.api;
-import static cn.ultramangaia.burp.BurpLocalAIExtension.logging;
+import static burp.BurpLocalAIExtension.api;
+import static burp.BurpLocalAIExtension.logging;
 
 public class HookManager {
 
@@ -90,11 +90,11 @@ public class HookManager {
             // Hook Prompt实现类
             Prompt prompt = ai.prompt();
             Class<?> promptClass = prompt.getClass();
-            hookClassMethodBody(pool, promptClass, "execute", "{return (burp.api.montoya.ai.chat.PromptResponse) java.gaia.AISpy.handle(\"%s\", this, $args);}");
+            hookClassMethodBody(pool, promptClass, "execute", "{return java.gaia.AISpy.handle(\"%s\", this, $args);}");
 
             // Hook AI 实现类
             Class<?> aiClass = ai.getClass();
-            hookClassMethodBody(pool, aiClass, "prompt", "{return (burp.api.montoya.ai.chat.Prompt) java.gaia.AISpy.handle(\"%s\", this, $args);}");
+            hookClassMethodBody(pool, aiClass, "prompt", "{return java.gaia.AISpy.handle(\"%s\", this, $args);}");
 
 
             // Hook FACTORY
@@ -103,16 +103,16 @@ public class HookManager {
             String code = """
                     {
                         if($2.getName().equals("promptOptions")){
-                            return (burp.api.montoya.ai.chat.PromptOptions) java.gaia.AISpy.handle("promptOptions()", this, $args);
+                            return java.gaia.AISpy.handle("promptOptions()", this, $args);
                         }
                         if($2.getName().equals("systemMessage")){
-                            return (burp.api.montoya.ai.chat.Message) java.gaia.AISpy.handle("systemMessage(Ljava/lang/String;)", this, $args);
+                            return java.gaia.AISpy.handle("systemMessage(Ljava/lang/String;)", this, $args);
                         }
                         if($2.getName().equals("userMessage")){
-                            return (burp.api.montoya.ai.chat.Message) java.gaia.AISpy.handle("userMessage(Ljava/lang/String;)", this, $args);
+                            return java.gaia.AISpy.handle("userMessage(Ljava/lang/String;)", this, $args);
                         }
                         if($2.getName().equals("assistantMessage")){
-                            return (burp.api.montoya.ai.chat.Message) java.gaia.AISpy.handle("assistantMessage(Ljava/lang/String;)", this, $args);
+                            return java.gaia.AISpy.handle("assistantMessage(Ljava/lang/String;)", this, $args);
                         }
                     }
                     """;
@@ -157,7 +157,7 @@ public class HookManager {
                 logging.logToOutput("Hooking " + methodInfo);
                 method.setBody(String.format(code, methodInfo));
             }
-            ctClass.writeFile("C:\\tmp\\tmp\\classes\\");
+//            ctClass.writeFile("C:\\tmp\\tmp\\classes\\");
             VmTool.redefineClasses(clazz, ctClass.toBytecode());
             classBytesBackup.put(clazz, backup);
         }catch(Throwable throwable){
@@ -182,7 +182,7 @@ public class HookManager {
                 logging.logToOutput("Hooking " + methodInfo);
                 method.insertBefore(code);
             }
-            ctClass.writeFile("C:\\tmp\\tmp\\classes\\");
+//            ctClass.writeFile("C:\\tmp\\tmp\\classes\\");
             VmTool.redefineClasses(clazz, ctClass.toBytecode());
             classBytesBackup.put(clazz, backup);
         }catch(Throwable throwable){

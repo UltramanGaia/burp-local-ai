@@ -3,8 +3,11 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+    maven {
+        setUrl("https://maven.aliyun.com/repository/public/")
+    }
     mavenLocal()
+    mavenCentral()
     maven { url = uri("https://jitpack.io") }
 
 }
@@ -15,6 +18,8 @@ dependencies {
     implementation("cn.ultramangaia:gaiasec-java-jvmhelper:1.1.0")
     implementation("org.swinglabs:swingx:1.6.1")
     implementation("io.github.ollama4j:ollama4j:1.0.89")
+    implementation("com.alibaba.fastjson2:fastjson2:2.0.56")
+    implementation("com.github.CoreyD97:Burp-Montoya-Utilities:v1.0.0")
 }
 
 tasks.withType<JavaCompile> {

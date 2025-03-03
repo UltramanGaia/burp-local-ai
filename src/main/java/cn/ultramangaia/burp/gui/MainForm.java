@@ -1,7 +1,12 @@
 package cn.ultramangaia.burp.gui;
 
-import cn.ultramangaia.burp.BurpLocalAIExtension;
-import cn.ultramangaia.burp.impl.AISpyImpl;
+import burp.BurpLocalAIExtension;
+import cn.ultramangaia.burp.gui.util.ComponentGroup;
+import cn.ultramangaia.burp.models.AiServer;
+import cn.ultramangaia.burp.persistence.PersistedObject;
+import cn.ultramangaia.burp.gui.util.Alignment;
+import cn.ultramangaia.burp.util.Globals;
+import cn.ultramangaia.burp.gui.util.PanelBuilder;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
@@ -19,19 +24,27 @@ public class MainForm {
     private JPanel mainPanel;
     private JPanel llmPane;
     private JPanel replacePane;
-    private JPanel configPane;
     private JTable llmTable;
     private JSplitPane llmVerticalSplitPane;
     private JSplitPane llmHorizontalSplitPane;
     private JTextPane llmReq;
     private JTextPane llmResp;
     private JRadioButton ollamaButton;
-    private JRadioButton chatgptButton;
+    private JRadioButton openaiButton;
     private JRadioButton deepseekButton;
     private JCheckBox autoHookCheckBox;
+    private JTextField ollamaHostTextField;
     private JTextField ollamaUrlTextField;
     private JTextField ollamaModelTextField;
     private JTextField ollamaApiKeyTextField;
+    private JTextField openaiHostTextField;
+    private JTextField openaiUrlTextField;
+    private JTextField openaiModelTextField;
+    private JTextField openaiApiKeyTextField;
+    private JTextField deepseekHostTextField;
+    private JTextField deepseekUrlTextField;
+    private JTextField deepseekModelTextField;
+    private JTextField deepseekApiKeyTextField;
     private JButton repeatButton;
     private JButton hookButton;
     private JButton applyButton;
@@ -40,8 +53,6 @@ public class MainForm {
         initGui();
         initHandlers();
     }
-
-
 
     public static MainForm getInstance() {
         if (INSTANCE == null) {
@@ -104,146 +115,100 @@ public class MainForm {
 
 
         //  Config
-        configPane = new JPanel(new GridBagLayout());
-
-
-        hookButton = new JButton("Hook");
-
-
-        applyButton = new JButton("Apply");
-
-
+        ComponentGroup enginePanel = new ComponentGroup(ComponentGroup.Orientation.HORIZONTAL, "Engine");
         ButtonGroup buttonGroup = new ButtonGroup();
         ollamaButton = new JRadioButton("Ollama");
-        chatgptButton = new JRadioButton("ChatGPT");
+        openaiButton = new JRadioButton("OpenAI");
         deepseekButton = new JRadioButton("DeepSeek");
         buttonGroup.add(ollamaButton);
-        buttonGroup.add(chatgptButton);
+        buttonGroup.add(openaiButton);
         buttonGroup.add(deepseekButton);
-        ollamaButton.setSelected(true);
-        chatgptButton.setSelected(false);
-        chatgptButton.setEnabled(false);
+        ollamaButton.setSelected(false);
+        openaiButton.setSelected(false);
         deepseekButton.setSelected(false);
-        deepseekButton.setEnabled(false);
+        String engineName = PersistedObject.getInstance().getString("engineName");
+        if(engineName == null){
+            engineName = Globals.OLLAMA;
+        }
+        switch (engineName){
+            case Globals.OLLAMA:
+                ollamaButton.setSelected(true);
+                break;
+            case Globals.OPENAI:
+                openaiButton.setSelected(true);
+                break;
+            case Globals.DEEPSEEK:
+                deepseekButton.setSelected(true);
+                break;
+        }
+        enginePanel.add(ollamaButton);
+        enginePanel.add(openaiButton);
+        enginePanel.add(deepseekButton);
 
-        JPanel autoHookPane = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        ComponentGroup ollamaPanel = new ComponentGroup(ComponentGroup.Orientation.VERTICAL, "ollama");
+        ollamaHostTextField = new JTextField(30);
+        ollamaHostTextField.setText(PersistedObject.getInstance().getOrSetString("ollama.host", "http://127.0.0.1:11434"));
+        ollamaPanel.addComponentWithLabel("Host:", ollamaHostTextField);
+        ollamaUrlTextField = new JTextField(30);
+        ollamaUrlTextField.setText(PersistedObject.getInstance().getOrSetString("ollama.url", "/api/chat"));
+        ollamaPanel.addComponentWithLabel("Url:", ollamaUrlTextField);
+        ollamaModelTextField = new JTextField(30);
+        ollamaModelTextField.setText(PersistedObject.getInstance().getOrSetString("ollama.model", "deepseek-r1:32b"));
+        ollamaPanel.addComponentWithLabel("Model:", ollamaModelTextField);
+        ollamaApiKeyTextField = new JPasswordField();
+        ollamaApiKeyTextField.setText(PersistedObject.getInstance().getOrSetString("ollama.apikey", ""));
+        ollamaPanel.addComponentWithLabel("API Key:", ollamaApiKeyTextField);
+
+        ComponentGroup openaiPanel = new ComponentGroup(ComponentGroup.Orientation.VERTICAL, "openai");
+        openaiHostTextField = new JTextField(30);
+        openaiHostTextField.setText(PersistedObject.getInstance().getOrSetString("openai.host", "https://api.openai.com"));
+        openaiPanel.addComponentWithLabel("Host:", openaiHostTextField);
+        openaiUrlTextField = new JTextField(30);
+        openaiUrlTextField.setText(PersistedObject.getInstance().getOrSetString("openai.url", "/v1/chat/completions"));
+        openaiPanel.addComponentWithLabel("Url:", openaiUrlTextField);
+        openaiModelTextField = new JTextField(30);
+        openaiModelTextField.setText(PersistedObject.getInstance().getOrSetString("openai.model", "gpt-3.5-turbo"));
+        openaiPanel.addComponentWithLabel("Model:", openaiModelTextField);
+        openaiApiKeyTextField = new JPasswordField();
+        openaiApiKeyTextField.setText(PersistedObject.getInstance().getOrSetString("ollama.apikey", ""));
+        openaiPanel.addComponentWithLabel("API Key:", openaiApiKeyTextField);
+
+        ComponentGroup deepseekPanel = new ComponentGroup(ComponentGroup.Orientation.VERTICAL, "deepseek");
+        deepseekHostTextField = new JTextField(30);
+        deepseekHostTextField.setText(PersistedObject.getInstance().getOrSetString("deepseek.host", "https://api.deepseek.com"));
+        deepseekPanel.addComponentWithLabel("Host:", deepseekHostTextField);
+        deepseekUrlTextField = new JTextField(30);
+        deepseekUrlTextField.setText(PersistedObject.getInstance().getOrSetString("deepseek.url", "/chat/completions"));
+        deepseekPanel.addComponentWithLabel("Url:", deepseekUrlTextField);
+        deepseekModelTextField = new JTextField(30);
+        deepseekModelTextField.setText(PersistedObject.getInstance().getOrSetString("deepseek.model", "deepseek-chat"));
+        deepseekPanel.addComponentWithLabel("Model:", deepseekModelTextField);
+        deepseekApiKeyTextField = new JPasswordField();
+        deepseekApiKeyTextField.setText(PersistedObject.getInstance().getOrSetString("deepseek.apikey", ""));
+        deepseekPanel.addComponentWithLabel("API Key:", deepseekApiKeyTextField);
+
+
+        ComponentGroup buttonPanel = new ComponentGroup(ComponentGroup.Orientation.HORIZONTAL, "Button");
         autoHookCheckBox = new JCheckBox("Auto Hook");
-        Boolean autoHook = BurpLocalAIExtension.projectCfgData.getBoolean("autoHook");
-        if(autoHook != null && autoHook){
-            autoHookCheckBox.setSelected(true);
-            BurpLocalAIExtension.hookManager.hook();
-            hookButton.setText("Unhook");
-        }
-        autoHookPane.add(autoHookCheckBox);
+        hookButton = new JButton("Hook");
+        applyButton = new JButton("Apply");
+        buttonPanel.add(autoHookCheckBox);
+        buttonPanel.add(hookButton);
+        buttonPanel.add(applyButton);
 
 
-        JLabel ollamaUrlLabel = new JLabel("Ollama URL:");
-        ollamaUrlTextField = new JTextField();
-        ollamaUrlTextField.setPreferredSize(new Dimension(200, 20));
-        String ollamaUrl = BurpLocalAIExtension.projectCfgData.getString("ollamaUrl");
-        if(ollamaUrl == null){
-            ollamaUrl = "http://127.0.0.1:11434";
-            BurpLocalAIExtension.projectCfgData.setString("ollamaUrl", ollamaUrl);
-        }
-        ollamaUrlTextField.setText(ollamaUrl);
-        JLabel ollamaModelLabel = new JLabel("Ollama Model:");
-        ollamaModelTextField = new JTextField();
-        ollamaModelTextField.setPreferredSize(new Dimension(200, 20));
-        String ollamaModel = BurpLocalAIExtension.projectCfgData.getString("ollamaModel");
-        if(ollamaModel == null){
-            ollamaModel = "deepseek-r1:32b";
-            BurpLocalAIExtension.projectCfgData.setString("ollamaModel", ollamaModel);
-        }
-        ollamaModelTextField.setText(ollamaModel);
-        JLabel ollamaApiKeyLabel = new JLabel("Ollama API Key:");
-        ollamaApiKeyTextField = new JTextField();
-        ollamaApiKeyTextField.setPreferredSize(new Dimension(200, 20));
-        String ollamaApiKey = BurpLocalAIExtension.projectCfgData.getString("ollamaApiKey");
-        if(ollamaApiKey == null){
-            ollamaApiKey = "";
-            BurpLocalAIExtension.projectCfgData.setString("ollamaApiKey", ollamaApiKey);
-        }
-        ollamaApiKeyTextField.setText(ollamaApiKey);
+        JComponent configComponent = PanelBuilder
+                .build(new JPanel[][] {
+                        new JPanel[] { enginePanel, enginePanel, enginePanel, enginePanel, enginePanel },
+                        new JPanel[] { ollamaPanel, openaiPanel, deepseekPanel },
+                        new JPanel[] { buttonPanel, buttonPanel, buttonPanel, buttonPanel, buttonPanel },
+                }, Alignment.TOPMIDDLE, 0, 0);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(ollamaButton, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(chatgptButton, gbc);
-        gbc.gridx = 2;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(deepseekButton, gbc);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(autoHookPane, gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        configPane.add(ollamaUrlLabel, gbc);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(ollamaUrlTextField, gbc);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        configPane.add(ollamaModelLabel, gbc);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 3;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(ollamaModelTextField, gbc);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        configPane.add(ollamaApiKeyLabel, gbc);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 4;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(ollamaApiKeyTextField, gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(hookButton, gbc);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        configPane.add(applyButton, gbc);
-        tabbedMainPane.addTab("Config", configPane);
-
+        tabbedMainPane.addTab("Config", configComponent);
 
         mainPanel.add(tabbedMainPane, BorderLayout.CENTER);
+
     }
 
     private void initHandlers() {
@@ -275,8 +240,25 @@ public class MainForm {
 
             String reqStr = llmReq.getText();
             llmResp.setText("waiting...");
-//            String responseStr = AISpyImpl.getInstance().chat(reqStr);
+//            String responseStr = AISpyImpl.getInstance().post(reqStr);
 //            llmResp.setText(responseStr);
+        });
+
+        ollamaButton.addActionListener(e -> {
+            ollamaHostTextField.setText("http://127.0.0.1:11434");
+            ollamaUrlTextField.setText("/api/chat");
+            ollamaModelTextField.setText("deepseek-r1:32b");
+        });
+        openaiButton.addActionListener(e -> {
+            openaiHostTextField.setText("https://api.openai.com");
+            openaiUrlTextField.setText("/v1/chat/completions");
+            openaiModelTextField.setText("gpt-3.5-turbo");
+        });
+        deepseekButton.addActionListener(e -> {
+            deepseekHostTextField.setText("https://api.deepseek.com");
+            deepseekUrlTextField.setText("/chat/completions");
+            deepseekModelTextField.setText("deepseek-chat");
+            //    modelTextField.setText("deepseek-reasoner");
         });
 
         hookButton.addActionListener(e -> {
@@ -292,28 +274,41 @@ public class MainForm {
             }
         });
 
-        applyButton.addActionListener(e -> {
-            BurpLocalAIExtension.projectCfgData.setBoolean("autoHook", autoHookCheckBox.isSelected());
-            String ollamaUrl = ollamaUrlTextField.getText().trim();
-            if(ollamaUrl.isEmpty()){
-                ollamaUrl = "http://127.0.0.1:11434";
-            }
-            String ollamaModel = ollamaModelTextField.getText().trim();
-            if(ollamaModel.isEmpty()){
-                ollamaModel = "deepseek-r1:32b";
-            }
-            String ollamaApiKey = ollamaApiKeyTextField.getText().trim();
+        Boolean autoHook = PersistedObject.getInstance().getBoolean("autoHook");
+        if(autoHook != null && autoHook){
+            autoHookCheckBox.setSelected(true);
+            BurpLocalAIExtension.hookManager.hook();
+            hookButton.setText("Unhook");
+        }
 
-            BurpLocalAIExtension.projectCfgData.setString("ollamaUrl", ollamaUrl);
-            BurpLocalAIExtension.projectCfgData.setString("ollamaModel", ollamaModel);
-            BurpLocalAIExtension.projectCfgData.setString("ollamaApiKey", ollamaApiKey);
+        applyButton.addActionListener(e -> {
+            PersistedObject.getInstance().setBoolean("autoHook", autoHookCheckBox.isSelected());
+            PersistedObject.getInstance().setString("ollama.host", ollamaHostTextField.getText().trim());
+            PersistedObject.getInstance().setString("ollama.url", ollamaUrlTextField.getText().trim());
+            PersistedObject.getInstance().setString("ollama.model", ollamaModelTextField.getText().trim());
+            PersistedObject.getInstance().setString("ollama.apikey", ollamaApiKeyTextField.getText().trim());
+
+            PersistedObject.getInstance().setString("openai.host", openaiHostTextField.getText().trim());
+            PersistedObject.getInstance().setString("openai.url", openaiUrlTextField.getText().trim());
+            PersistedObject.getInstance().setString("openai.model", openaiModelTextField.getText().trim());
+            PersistedObject.getInstance().setString("openai.apikey", openaiApiKeyTextField.getText().trim());
+
+            PersistedObject.getInstance().setString("deepseek.host", deepseekHostTextField.getText().trim());
+            PersistedObject.getInstance().setString("deepseek.url", deepseekUrlTextField.getText().trim());
+            PersistedObject.getInstance().setString("deepseek.model", deepseekModelTextField.getText().trim());
+            PersistedObject.getInstance().setString("deepseek.apikey", deepseekApiKeyTextField.getText().trim());
+
             if(ollamaButton.isSelected()){
-                AISpyImpl.getInstance().updateCfg("ollama", ollamaUrl, ollamaModel, ollamaApiKey);
-            }else if(chatgptButton.isSelected()){
-                AISpyImpl.getInstance().updateCfg("chatgpt", ollamaUrl, ollamaModel, ollamaApiKey);
+                PersistedObject.getInstance().setString("engine", Globals.OLLAMA);
+                AiServer.getInstance().updateCfg(Globals.OLLAMA);
+            }else if(openaiButton.isSelected()){
+                PersistedObject.getInstance().setString("engine", Globals.OPENAI);
+                AiServer.getInstance().updateCfg(Globals.OPENAI);
             }else if(deepseekButton.isSelected()){
-                AISpyImpl.getInstance().updateCfg("deepseek", ollamaUrl, ollamaModel, ollamaApiKey);
+                PersistedObject.getInstance().setString("engine", Globals.DEEPSEEK);
+                AiServer.getInstance().updateCfg(Globals.DEEPSEEK);
             }
+            PersistedObject.getInstance().save();
         });
 
     }

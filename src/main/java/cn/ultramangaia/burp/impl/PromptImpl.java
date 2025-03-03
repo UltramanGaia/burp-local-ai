@@ -2,16 +2,8 @@ package cn.ultramangaia.burp.impl;
 
 import burp.api.montoya.ai.chat.*;
 import cn.ultramangaia.burp.gui.MainForm;
-import io.github.ollama4j.exceptions.RoleNotFoundException;
-import io.github.ollama4j.models.chat.OllamaChatMessage;
-import io.github.ollama4j.models.chat.OllamaChatMessageRole;
-import io.github.ollama4j.models.response.OllamaResult;
-import io.github.ollama4j.utils.OptionsBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static cn.ultramangaia.burp.BurpLocalAIExtension.api;
+import static burp.BurpLocalAIExtension.api;
 
 public class PromptImpl implements Prompt {
     @Override
@@ -35,10 +27,10 @@ public class PromptImpl implements Prompt {
 
     @Override
     public PromptResponse execute(PromptOptions options, Message... messages) throws PromptException {
-        OptionsBuilder builder = new OptionsBuilder();
-        if(options instanceof PromptOptionsImpl){
-            builder.setTemperature((float)((PromptOptionsImpl) options).getTemperature());
-        }
+//        OptionsBuilder builder = new OptionsBuilder();
+//        if(options instanceof PromptOptionsImpl){
+//            builder.setTemperature((float)((PromptOptionsImpl) options).getTemperature());
+//        }
         String requestStr = convertMessagesToString(messages).trim();
         api.logging().logToOutput("Request: ------");
         api.logging().logToOutput(requestStr);
