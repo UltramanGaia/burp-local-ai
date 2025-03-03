@@ -1,7 +1,9 @@
 package cn.ultramangaia.burp.models;
 
+import cn.ultramangaia.burp.gui.MainForm;
 import cn.ultramangaia.burp.models.chat.*;
 import cn.ultramangaia.burp.persistence.PersistedObject;
+import com.alibaba.fastjson2.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +21,6 @@ public class AiServer {
     private AiServer() {
         engineName = OLLAMA;
         chatServices = new HashMap<>();
-        chatServices.put(OLLAMA, new OllamaChatService("http://127.0.0.1:11434", "/api/chat", "deepseek-r1:32b", ""));
     }
 
     public static AiServer getInstance() {
@@ -34,9 +35,18 @@ public class AiServer {
         if (chatService == null) {
             return "unknown engine";
         }
-        return chatService.chat(messages).content;
+        ChatResult chatResult = chatService.chat(messages);
+        MainForm.getInstance().addAiLog(chatResult);
+        return chatResult.content;
     }
 
+    public String chat(String engine, JSONObject messages) {
+        ChatService chatService = chatServices.get(engine);
+        if (chatService == null) {
+            return "unknown engine";
+        }
+        return chatService.chat(messages).content;
+    }
 
     public void updateCfg(String engineName) {
         PersistedObject po = PersistedObject.getInstance();

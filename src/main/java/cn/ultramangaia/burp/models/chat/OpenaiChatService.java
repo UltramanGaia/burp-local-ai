@@ -1,9 +1,12 @@
 package cn.ultramangaia.burp.models.chat;
 
 import cn.ultramangaia.burp.models.request.HttpTool;
+import cn.ultramangaia.burp.util.Globals;
 import com.alibaba.fastjson2.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OpenaiChatService implements ChatService{
     private String host;
@@ -23,13 +26,26 @@ public class OpenaiChatService implements ChatService{
         reqBody.put("messages", messages);
         reqBody.put("model", model);
         reqBody.put("stream", false);
+        return chat(reqBody);
+    }
 
-        HttpTool httpTool = new HttpTool();
-        JSONObject response = httpTool.post(host+url, reqBody);
-        if(response.getString("error")!=null){
-            return new ChatResult(response.getString("error"));
-        }else{
-            return new ChatResult(response.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content"));
+    @Override
+    public ChatResult chat(JSONObject body) {
+        ChatResult result = new ChatResult();
+        result.engine = Globals.OPENAI;
+        result.reqBody = body;
+        Map<String, String> headers = new HashMap<>();
+        if(!apiKey.isEmpty()){
+            headers.put("Authorization", "Bearer " + apiKey);
         }
+        HttpTool httpTool = new HttpTool();
+        JSONObject response = httpTool.post(host+url, headers, body);
+        result.resBody = response;
+        if(response.getString("error")!=null){
+            result.content = response.getString("error");
+        }else{
+            result.content = response.getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
+        }
+        return result;
     }
 }

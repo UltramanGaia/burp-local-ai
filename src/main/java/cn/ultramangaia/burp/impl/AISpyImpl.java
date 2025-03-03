@@ -4,11 +4,6 @@ import burp.api.montoya.ai.chat.Message;
 import burp.api.montoya.ai.chat.PromptOptions;
 import cn.ultramangaia.burp.models.AiServer;
 import cn.ultramangaia.burp.models.chat.ChatMessage;
-import io.github.ollama4j.OllamaAPI;
-import io.github.ollama4j.exceptions.RoleNotFoundException;
-import io.github.ollama4j.models.chat.OllamaChatMessage;
-import io.github.ollama4j.models.chat.OllamaChatMessageRole;
-import io.github.ollama4j.models.chat.OllamaChatResult;
 
 import java.gaia.AbstractSpy;
 import java.util.ArrayList;

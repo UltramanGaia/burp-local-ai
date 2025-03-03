@@ -1,6 +1,7 @@
 package cn.ultramangaia.burp.models.chat;
 
 import cn.ultramangaia.burp.models.request.HttpTool;
+import cn.ultramangaia.burp.util.Globals;
 import com.alibaba.fastjson2.JSONObject;
 
 import java.net.URI;
@@ -23,6 +24,18 @@ public class OllamaChatService implements ChatService{
     }
     @Override
     public ChatResult chat(List<ChatMessage> messages) {
+        JSONObject reqBody = new JSONObject();
+        reqBody.put("messages", messages);
+        reqBody.put("model", model);
+        reqBody.put("stream", false);
+        return chat(reqBody);
+    }
+
+    @Override
+    public ChatResult chat(JSONObject body) {
+        ChatResult result = new ChatResult();
+        result.engine = Globals.OLLAMA;
+        result.reqBody = body;
         Map<String, String> headers = new HashMap<>();
         if(!apiKey.isEmpty()){
             if(apiKey.contains(":")){
@@ -31,18 +44,14 @@ public class OllamaChatService implements ChatService{
                 headers.put("Authorization", "Bearer " + apiKey);
             }
         }
-
-        JSONObject reqBody = new JSONObject();
-        reqBody.put("messages", messages);
-        reqBody.put("model", model);
-        reqBody.put("stream", false);
-
         HttpTool httpTool = new HttpTool();
-        JSONObject response = httpTool.post(host+url, headers, reqBody);
+        JSONObject response = httpTool.post(host+url, headers, body);
+        result.resBody = response;
         if(response.getString("error")!=null){
-            return new ChatResult(response.getString("error"));
+            result.content = response.getString("error");
         }else{
-            return new ChatResult(response.getJSONObject("message").getString("content"));
+            result.content = response.getJSONObject("message").getString("content");
         }
+        return result;
     }
 }

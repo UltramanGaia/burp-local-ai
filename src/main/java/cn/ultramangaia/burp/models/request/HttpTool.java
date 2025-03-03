@@ -14,9 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpTool {
-    public JSONObject post(String url, JSONObject body) {
-        return post(url, new HashMap<>(), body);
-    }
     public JSONObject post(String url, Map<String, String> headers, JSONObject body) {
         JSONObject responseBodyJson = null;
         URI uri = URI.create(url);

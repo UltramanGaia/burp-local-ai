@@ -3,10 +3,13 @@ package cn.ultramangaia.burp.gui;
 import burp.BurpLocalAIExtension;
 import cn.ultramangaia.burp.gui.util.ComponentGroup;
 import cn.ultramangaia.burp.models.AiServer;
+import cn.ultramangaia.burp.models.chat.ChatResult;
 import cn.ultramangaia.burp.persistence.PersistedObject;
 import cn.ultramangaia.burp.gui.util.Alignment;
 import cn.ultramangaia.burp.util.Globals;
 import cn.ultramangaia.burp.gui.util.PanelBuilder;
+import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSONWriter;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
@@ -27,6 +30,8 @@ public class MainForm {
     private JTable llmTable;
     private JSplitPane llmVerticalSplitPane;
     private JSplitPane llmHorizontalSplitPane;
+
+    private String llmEngine;
     private JTextPane llmReq;
     private JTextPane llmResp;
     private JRadioButton ollamaButton;
@@ -67,10 +72,10 @@ public class MainForm {
 
         //  LLM
         llmPane = new JPanel(new BorderLayout());
-
+        llmEngine = Globals.OLLAMA;
         llmReq = new JTextPane();
         llmResp = new JTextPane();
-        llmTable = new JXTable(new DefaultTableModel(new Object[]{"#", "Request", "Response"}, 0));
+        llmTable = new JXTable(new DefaultTableModel(new Object[]{"#", "Engine", "Request", "Response"}, 0));
         llmTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         JScrollPane topPane = new JScrollPane(llmTable);
@@ -126,21 +131,7 @@ public class MainForm {
         ollamaButton.setSelected(false);
         openaiButton.setSelected(false);
         deepseekButton.setSelected(false);
-        String engineName = PersistedObject.getInstance().getString("engineName");
-        if(engineName == null){
-            engineName = Globals.OLLAMA;
-        }
-        switch (engineName){
-            case Globals.OLLAMA:
-                ollamaButton.setSelected(true);
-                break;
-            case Globals.OPENAI:
-                openaiButton.setSelected(true);
-                break;
-            case Globals.DEEPSEEK:
-                deepseekButton.setSelected(true);
-                break;
-        }
+
         enginePanel.add(ollamaButton);
         enginePanel.add(openaiButton);
         enginePanel.add(deepseekButton);
@@ -214,8 +205,10 @@ public class MainForm {
     private void initHandlers() {
         llmTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             public void valueChanged(ListSelectionEvent event) {
-                String reqStr = (String)llmTable.getValueAt(llmTable.getSelectedRow(), 1);
-                String respStr = (String)llmTable.getValueAt(llmTable.getSelectedRow(), 2);
+                String engine = (String)llmTable.getValueAt(llmTable.getSelectedRow(), 1);
+                String reqStr = (String)llmTable.getValueAt(llmTable.getSelectedRow(), 2);
+                String respStr = (String)llmTable.getValueAt(llmTable.getSelectedRow(), 3);
+                llmEngine = engine;
                 llmReq.setText(reqStr);
                 llmResp.setText(respStr);
             }
@@ -237,12 +230,35 @@ public class MainForm {
         });
 
         repeatButton.addActionListener(e -> {
-
+            repeatButton.setEnabled(false);
             String reqStr = llmReq.getText();
+            JSONObject reqBody = JSONObject.parseObject(reqStr);
             llmResp.setText("waiting...");
-//            String responseStr = AISpyImpl.getInstance().post(reqStr);
-//            llmResp.setText(responseStr);
+            new Thread(() -> {
+                String content = AiServer.getInstance().chat(llmEngine, reqBody);
+                llmResp.setText(content);
+                repeatButton.setEnabled(true);
+            }).start();
         });
+
+        String engineName = PersistedObject.getInstance().getString("engine");
+        if(engineName == null){
+            engineName = Globals.OLLAMA;
+        }
+        switch (engineName){
+            case Globals.OLLAMA:
+                ollamaButton.setSelected(true);
+                AiServer.getInstance().updateCfg(Globals.OLLAMA);
+                break;
+            case Globals.OPENAI:
+                openaiButton.setSelected(true);
+                AiServer.getInstance().updateCfg(Globals.OPENAI);
+                break;
+            case Globals.DEEPSEEK:
+                deepseekButton.setSelected(true);
+                AiServer.getInstance().updateCfg(Globals.DEEPSEEK);
+                break;
+        }
 
         ollamaButton.addActionListener(e -> {
             ollamaHostTextField.setText("http://127.0.0.1:11434");
@@ -316,7 +332,10 @@ public class MainForm {
         return mainPanel;
     }
 
-    public void addAiLog(String requestStr, String responseStr) {
-        ((DefaultTableModel)llmTable.getModel()).addRow(new Object[]{llmTable.getRowCount()+1, requestStr, responseStr});
+    public void addAiLog(ChatResult chatResult) {
+        String engine = chatResult.engine;
+        String requestStr = chatResult.reqBody.toJSONString(JSONWriter.Feature.PrettyFormat);
+        String content = chatResult.content;
+        ((DefaultTableModel)llmTable.getModel()).addRow(new Object[]{llmTable.getRowCount()+1, engine, requestStr, content});
     }
 }

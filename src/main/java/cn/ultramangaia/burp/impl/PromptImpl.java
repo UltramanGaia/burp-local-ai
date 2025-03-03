@@ -40,7 +40,6 @@ public class PromptImpl implements Prompt {
         api.logging().logToOutput("Response: ------");
         api.logging().logToOutput(responseStr);
         api.logging().logToOutput("------");
-        MainForm.getInstance().addAiLog(requestStr,responseStr);
         int thinkEnd = responseStr.indexOf("</think>");
         if(thinkEnd != -1){
             responseStr = responseStr.substring(thinkEnd+"</think>".length());
