@@ -4,7 +4,6 @@ import cn.ultramangaia.burp.models.request.HttpTool;
 import cn.ultramangaia.burp.util.Globals;
 import com.alibaba.fastjson2.JSONObject;
 
-import java.net.URI;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;

@@ -2,8 +2,6 @@ package cn.ultramangaia.burp.gui.util;
 
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.HashMap;
 

@@ -1,7 +1,6 @@
 package cn.ultramangaia.burp.impl;
 
 import burp.api.montoya.ai.chat.*;
-import cn.ultramangaia.burp.gui.MainForm;
 
 import static burp.BurpLocalAIExtension.api;
 

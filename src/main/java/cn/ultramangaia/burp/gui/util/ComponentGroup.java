@@ -1,8 +1,6 @@
 package cn.ultramangaia.burp.gui.util;
 
 
-import cn.ultramangaia.burp.persistence.PersistedObject;
-
 import javax.swing.*;
 import java.awt.*;
 

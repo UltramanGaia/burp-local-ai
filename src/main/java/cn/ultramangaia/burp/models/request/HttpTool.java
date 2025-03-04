@@ -1,6 +1,5 @@
 package cn.ultramangaia.burp.models.request;
 
-import cn.ultramangaia.burp.models.chat.ChatResult;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 
@@ -10,7 +9,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 
 public class HttpTool {
