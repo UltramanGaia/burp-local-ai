@@ -154,7 +154,7 @@ public class HookManager {
             ctClass.defrost();
             for (CtMethod method : ctClass.getDeclaredMethods(methodName)) {
                 String methodInfo = method.getName() + Descriptor.getParamDescriptor(method.getSignature());
-                logging.logToOutput("Hooking " + methodInfo);
+//                logging.logToOutput("Hooking " + methodInfo);
                 method.setBody(String.format(code, methodInfo));
             }
 //            ctClass.writeFile("C:\\tmp\\tmp\\classes\\");
@@ -179,7 +179,7 @@ public class HookManager {
             ctClass.defrost();
             for (CtMethod method : ctClass.getDeclaredMethods(methodName)) {
                 String methodInfo = method.getName() + Descriptor.getParamDescriptor(method.getSignature());
-                logging.logToOutput("Hooking " + methodInfo);
+//                logging.logToOutput("Hooking " + methodInfo);
                 method.insertBefore(code);
             }
 //            ctClass.writeFile("C:\\tmp\\tmp\\classes\\");

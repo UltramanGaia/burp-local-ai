@@ -1,5 +1,6 @@
 package cn.ultramangaia.burp.models.request;
 
+import cn.ultramangaia.burp.gui.MainForm;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 
@@ -13,6 +14,9 @@ import java.util.Map;
 
 public class HttpTool {
     public JSONObject post(String url, Map<String, String> headers, JSONObject body) {
+        String originJsonBody = body.toJSONString();
+        String modifiedJsonBody = MainForm.getInstance().modifyRequestBody(originJsonBody);
+
         JSONObject responseBodyJson = null;
         URI uri = URI.create(url);
         // Create Request
@@ -23,7 +27,7 @@ public class HttpTool {
             builder.header(entry.getKey(), entry.getValue());
         }
         builder.timeout(Duration.ofSeconds(300));
-        builder.POST(HttpRequest.BodyPublishers.ofString(body.toJSONString()));
+        builder.POST(HttpRequest.BodyPublishers.ofString(modifiedJsonBody));
         HttpRequest request = builder.build();
         try {
             HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());

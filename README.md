@@ -7,9 +7,10 @@ so the current expansion is built to provide unified takeover and the ability to
 # Quick Start
 1. Install the plugin
 2. Burp Local AI -> Configure LLM connection -> Apply button -> Hook button
-3. Check Auto Hook, automatically hook when the same project starts (optional)
+3. Check Auto Hook, automatically hook when burp starts (optional)
 # Sample image
-Show AI call data
-![Show AI call data](./images/1.png)
 Configure LLM connection
-![Configure LLM connection](./images/2.png)
+![Configure LLM connection](./images/1.png)
+Show AI call data
+![Show AI call data](./images/2.png)
+
